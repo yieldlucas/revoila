@@ -260,35 +260,52 @@
       counters.forEach(function(el){ io2.observe(el); });
     }
 
-    // Démo "relance en direct"
+    // Démo "relance en direct" — enchaîne plusieurs scénarios
     var demo = document.querySelector('.phone-demo');
     if (demo) {
       var chat = demo.querySelector('.chat');
       var toast = demo.querySelector('.demo-toast');
       var btn = demo.querySelector('.demo-btn');
-      var running = false;
+      var topEl = demo.querySelector('.phone-top');
+      var running = false, idx = 0, nextTimer = null;
+      var SCEN = [
+        { name: "Camille", sys: "🔔 Cliente endormie : <b>Camille</b> · 58 j sans venir",
+          out: "Bonjour Camille, ça fait un moment chez Chez Lucas ! On garde votre magret au chaud 🍽️",
+          reply: "Oh génial, je réserve pour 2 ce soir 😍", toast: "✓ Camille revient · +35 €" },
+        { name: "Karim", sys: "🎂 Anniversaire de <b>Karim</b> aujourd'hui",
+          out: "Joyeux anniversaire Karim ! 🎉 Votre dessert est offert tout le mois chez nous.",
+          reply: "Trop sympa, on passe vendredi à 4 !", toast: "✓ Table de 4 vendredi · +110 €" },
+        { name: "Service du soir", sys: "🌙 Mardi soir calme détecté",
+          out: "Mardi tranquille ? Venez ce soir, l'apéritif est offert pour 2 🥂",
+          reply: "On arrive vers 20h, merci !", toast: "✓ Table de 2 ce soir · +48 €" },
+        { name: "Léa", sys: "⏳ Offre limitée : -15 % mardi → jeudi",
+          out: "Cette semaine : -15 % du mardi au jeudi soir. On vous garde une table ? 👇",
+          reply: "Parfait, je réserve jeudi 👍", toast: "✓ Réservation jeudi · +64 €" }
+      ];
       function wait(ms){ return new Promise(function(r){ setTimeout(r, reduce ? Math.min(ms,120) : ms); }); }
       function bubble(cls, html){ var d=document.createElement('div'); d.className='bubble '+cls; d.innerHTML=html; chat.appendChild(d); chat.scrollTop=chat.scrollHeight; return d; }
-      async function runDemo(){
+      async function play(){
         if (running) return; running = true;
+        if (nextTimer) { clearTimeout(nextTimer); nextTimer = null; }
+        var s = SCEN[idx];
+        if (topEl) topEl.innerHTML = '💬 ' + s.name;
         if (btn){ btn.disabled = true; btn.textContent = 'Démo en cours…'; }
         chat.innerHTML = ''; if (toast) toast.classList.remove('show');
-        bubble('sys', '🔔 Client endormi détecté : <b>Camille</b> · absente depuis 58 j');
-        await wait(950);
-        var t1 = bubble('out typing', '<span></span><span></span><span></span>'); await wait(1100); t1.remove();
-        bubble('out', "Bonjour Camille, ça fait un moment chez Chez Lucas ! On garde votre magret au chaud 🍽️");
-        await wait(1200);
-        var t2 = bubble('in typing', '<span></span><span></span><span></span>'); await wait(1100); t2.remove();
-        bubble('in', "Oh génial, je réserve pour 2 ce soir 😍");
-        await wait(650);
-        if (toast) toast.classList.add('show');
-        if (btn){ btn.disabled = false; btn.textContent = '↺ Rejouer'; }
+        bubble('sys', s.sys); await wait(900);
+        var t1 = bubble('out typing', '<span></span><span></span><span></span>'); await wait(1000); t1.remove();
+        bubble('out', s.out); await wait(1100);
+        var t2 = bubble('in typing', '<span></span><span></span><span></span>'); await wait(1000); t2.remove();
+        bubble('in', s.reply); await wait(550);
+        if (toast){ toast.textContent = s.toast; toast.classList.add('show'); }
+        if (btn){ btn.disabled = false; btn.textContent = '↺ Autre exemple'; }
         running = false;
+        idx = (idx + 1) % SCEN.length;
+        if (!reduce) nextTimer = setTimeout(play, 3400);  // enchaîne tout seul
       }
-      if (btn) btn.addEventListener('click', runDemo);
+      if (btn) btn.addEventListener('click', function(){ if (nextTimer){ clearTimeout(nextTimer); nextTimer=null; } play(); });
       if (!reduce && 'IntersectionObserver' in window) {
         var io3 = new IntersectionObserver(function(entries){
-          entries.forEach(function(en){ if (en.isIntersecting){ runDemo(); io3.disconnect(); } });
+          entries.forEach(function(en){ if (en.isIntersecting){ play(); io3.disconnect(); } });
         }, { threshold: 0.45 });
         io3.observe(demo);
       }

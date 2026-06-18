@@ -29,7 +29,7 @@ def test_datasource_isole_par_restaurant():
     c2 = src.get_customers("resto2")
     assert all(c.restaurant_id == "resto1" for c in c1)
     assert all(c.restaurant_id == "resto2" for c in c2)
-    assert len(c1) == 15 and len(c2) == 5
+    assert len(c1) == 18 and len(c2) == 6
 
 
 def test_db_logs_scopes_par_restaurant(tmp_path):

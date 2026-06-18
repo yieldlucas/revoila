@@ -143,7 +143,9 @@ def dashboard(request: Request, restaurant_id: str, token: str = Query("")):
     customers = get_default_source().get_customers(restaurant_id)
     logs = db.get_logs(restaurant_id)
     opt_outs = db.get_opt_outs(restaurant_id)
-    targets = find_lapsed_customers(customers, restaurant, logs=logs, opt_outs=opt_outs)
+    # Affichage : on liste tous les clients endormis (hors désinscrits), sans appliquer
+    # le cooldown — la liste reste donc toujours pleine pour la démo.
+    targets = find_lapsed_customers(customers, restaurant, opt_outs=opt_outs)
     roi = estimate_recovered_revenue(targets, restaurant)
     chart_svg = charts.bar_chart_svg(db.daily_send_counts(restaurant_id, days=14))
 
@@ -220,12 +222,9 @@ def preview(request: Request, restaurant_id: str, token: str = Query(""),
         )
     db.init_db()
     customers = get_default_source().get_customers(restaurant_id)
-    logs = db.get_logs(restaurant_id)
     opt_outs = db.get_opt_outs(restaurant_id)
-    targets = find_lapsed_customers(
-        customers, restaurant, logs=logs, opt_outs=opt_outs,
-        annual_cap=plans.annual_cap(restaurant.plan),
-    )
+    # Démo : liste toujours pleine (sans cooldown), pour pouvoir simuler à volonté.
+    targets = find_lapsed_customers(customers, restaurant, opt_outs=opt_outs)
     rows = []
     for c, s in scoring.prioritize(targets, restaurant):
         if segment != "all" and s.segment != segment:

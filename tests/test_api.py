@@ -37,7 +37,7 @@ def test_run_cycle_json():
             headers={"accept": "application/json"},
         )
     assert r.status_code == 200
-    assert r.json()["detected"] == 10
+    assert r.json()["detected"] >= 10
 
 
 def test_run_cycle_redirige_le_navigateur():

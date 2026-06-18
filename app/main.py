@@ -47,6 +47,8 @@ async def lifespan(app: FastAPI):
     """Démarre le scheduler au lancement, l'arrête proprement à l'extinction."""
     configure_logging()
     db.init_db()
+    from .demo import seed_demo
+    seed_demo()  # remplit la démo (idempotent)
     from .scheduler import start_scheduler
     scheduler = start_scheduler()
     try:

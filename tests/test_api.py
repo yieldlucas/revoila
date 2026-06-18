@@ -15,6 +15,14 @@ def test_health():
     assert r.status_code == 200 and r.json() == {"status": "ok", "db": "ok"}
 
 
+def test_dashboard_demo_est_rempli():
+    # Le seed de démo (au démarrage) doit peupler l'historique et des retours.
+    with _client() as c:
+        r = c.get("/r/resto1?token=demo-token-resto1")
+    assert r.status_code == 200
+    assert "✓ revenu" in r.text
+
+
 def test_dashboard_affiche_le_graphique():
     with _client() as c:
         r = c.get("/r/resto1?token=demo-token-resto1")

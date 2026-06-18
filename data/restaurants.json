@@ -1,7 +1,7 @@
 [
   {
     "id": "resto1",
-    "name": "Chez Lucas",
+    "name": "Le Bistrot du Coin",
     "tone": "chaleureux et convivial",
     "dashboard_token": "demo-token-resto1",
     "plan": "pro",

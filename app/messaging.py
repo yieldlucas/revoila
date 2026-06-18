@@ -87,6 +87,28 @@ def _ai_message(customer: Customer, restaurant: Restaurant) -> str:
     return resp.content[0].text.strip()
 
 
+def demo_campaign(customer: Customer, restaurant: Restaurant, i: int) -> dict:
+    """Pour la démo : propose des messages variés (perdu, anniversaire, offre, soir creux…)
+    afin de montrer la polyvalence dans l'écran de validation. Présentation uniquement."""
+    name = customer.first_name
+    resto = restaurant.name
+    dish = (customer.favorite_dish or "plat").lower()
+    kinds = [
+        ("🔁", "Client perdu",
+         f"Bonjour {name}, ça fait un moment chez {resto} ! On garde votre {dish} au chaud 🍽️"),
+        ("🎂", "Anniversaire",
+         f"Joyeux anniversaire {name} ! 🎉 Votre dessert est offert tout le mois chez {resto}."),
+        ("🎁", "Offre -15 %",
+         f"{name}, profitez de -15 % cette semaine chez {resto}. On vous réserve une table ? 👇"),
+        ("🌙", "Soir creux",
+         f"{name}, mardi soir au calme ? L'apéritif est offert pour 2 ce soir chez {resto} 🥂"),
+        ("👑", "Merci VIP",
+         f"{name}, vous comptez parmi nos meilleurs clients 🙏 Une attention vous attend à votre prochaine visite chez {resto}."),
+    ]
+    icon, label, message = kinds[i % len(kinds)]
+    return {"label": f"{icon} {label}", "message": message}
+
+
 def generate_message(customer: Customer, restaurant: Restaurant) -> str:
     """IA si clé dispo, sinon template. Le template est toujours un filet de sécurité."""
     if config.ANTHROPIC_API_KEY:

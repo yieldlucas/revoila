@@ -17,7 +17,7 @@ from fastapi.templating import Jinja2Templates
 from . import attribution, billing, charts, db, plans, scoring
 from .data_source import get_default_source
 from .logging_config import configure_logging, get_logger
-from .messaging import choose_channel, generate_message, send_message
+from .messaging import choose_channel, demo_campaign, generate_message, send_message
 from .models import Restaurant
 from .restaurants import get_all_restaurants, get_restaurant
 from .scheduler import run_cycle
@@ -226,13 +226,16 @@ def preview(request: Request, restaurant_id: str, token: str = Query(""),
     # Démo : liste toujours pleine (sans cooldown), pour pouvoir simuler à volonté.
     targets = find_lapsed_customers(customers, restaurant, opt_outs=opt_outs)
     rows = []
+    i = 0
     for c, s in scoring.prioritize(targets, restaurant):
         if segment != "all" and s.segment != segment:
             continue
+        camp = demo_campaign(c, restaurant, i)
+        i += 1
         rows.append({
             "c": c, "score": s.value, "segment": s.segment,
             "channel": choose_channel(c, restaurant),
-            "message": generate_message(c, restaurant),
+            "campaign": camp["label"], "message": camp["message"],
         })
     return templates.TemplateResponse(
         request=request, name="preview.html",

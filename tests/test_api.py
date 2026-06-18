@@ -62,7 +62,7 @@ def test_demo_liste_les_restaurants():
     with _client() as c:
         r = c.get("/demo")
     assert r.status_code == 200
-    assert "Chez Lucas" in r.text and "La Trattoria" in r.text
+    assert "Le Bistrot du Coin" in r.text and "La Trattoria" in r.text
 
 
 def test_waitlist_enregistre_un_email():

@@ -88,3 +88,4 @@ Le fichier `CLAUDE.md` contient la spec complète et la roadmap. Ouvre le projet
 ## Brancher une vraie caisse (plus tard)
 
 Créer une classe `LightspeedDataSource` dans `app/data_source.py` qui implémente la même interface `DataSource`. Rien d'autre ne change dans le code. Voir CLAUDE.md, étape 7.
+# revoila

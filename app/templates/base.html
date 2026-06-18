@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Revoilà{% endblock %}</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><rect width='24' height='24' rx='6' fill='%230071e3'/><path d='M5 12a7 7 0 1 0 2-4.9' fill='none' stroke='white' stroke-width='2.2' stroke-linecap='round'/><path d='M7 3v4h4' fill='none' stroke='white' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/></svg>">
+  <style>
+    :root{
+      --bg:#ffffff; --section:#f5f5f7; --card:#ffffff; --ink:#1d1d1f; --muted:#6e6e73;
+      --line:#d2d2d7; --accent:#0071e3; --accent-2:#0071e3; --green:#1a7f37; --gold:#0071e3;
+      --pro:linear-gradient(135deg,#0a84ff 0%,#0071e3 100%);
+      --shadow:0 4px 20px rgba(0,0,0,.06);
+      --radius:18px;
+      --sans:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+      --serif:var(--sans);
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{
+      margin:0; background:var(--bg); color:var(--ink);
+      font-family:var(--sans); line-height:1.5; -webkit-font-smoothing:antialiased;
+      letter-spacing:-.01em;
+    }
+    a{color:var(--accent); text-decoration:none}
+    a:hover{text-decoration:underline}
+    .wrap{max-width:920px; margin:0 auto; padding:22px 22px 80px}
+
+    /* Marque */
+    .topbar{display:flex; align-items:center; justify-content:space-between; padding:6px 0 26px}
+    .brand{display:flex; align-items:center; gap:11px; color:var(--ink)}
+    .brand:hover{text-decoration:none}
+    .logo{width:32px;height:32px;border-radius:9px;background:var(--accent);
+      display:grid;place-items:center; flex:none}
+    .brand .name{font-weight:700; font-size:20px; letter-spacing:-.02em; line-height:1}
+    .brand small{display:block;font-weight:400;font-size:11px;color:var(--muted);
+      letter-spacing:0;margin-top:2px}
+
+    h1{font-weight:700; font-size:44px; line-height:1.06; letter-spacing:-.03em; margin:.12em 0}
+    h2{font-weight:600; font-size:13px; letter-spacing:.02em; text-transform:uppercase;
+      color:var(--muted); margin:42px 0 14px}
+    h3{font-weight:600; letter-spacing:-.02em}
+    .muted{color:var(--muted)}
+
+    .badge{display:inline-flex; align-items:center; gap:6px; padding:4px 12px; border-radius:980px;
+      font-size:12px; font-weight:600; color:#fff; background:var(--accent)}
+    .badge.pro{background:var(--accent)}
+    .tag{display:inline-block; padding:2px 10px; border-radius:980px; font-size:12px; font-weight:600}
+    .tag.vip{background:#e8f0fe; color:#0071e3}
+    .tag.habitue{background:#e7f6ec; color:var(--green)}
+    .tag.occasionnel{background:#f0f0f2; color:#6e6e73}
+
+    .cards{display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin:22px 0}
+    .stat{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:20px}
+    .stat .n{font-size:34px; font-weight:700; letter-spacing:-.03em}
+    .stat .l{font-size:13px; color:var(--muted)}
+
+    .panel{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); overflow:hidden}
+    .panel .pad{padding:20px}
+    table{width:100%; border-collapse:collapse}
+    th,td{text-align:left; padding:13px 18px; font-size:14px; border-bottom:1px solid var(--line)}
+    th{font-size:12px; letter-spacing:.01em; color:var(--muted); background:var(--section); font-weight:600}
+    tr:last-child td{border-bottom:0}
+    tbody tr:hover{background:#fafafc}
+
+    .pill{font-size:12px; padding:2px 10px; border-radius:980px; background:#f0f0f2; color:var(--muted)}
+    .pill.sent{background:#e7f6ec; color:var(--green)}
+    .pill.failed{background:#fdecea; color:#c0362c}
+    .pill.logged{background:#eef0f2; color:#6e6e73}
+
+    .score{display:inline-grid; place-items:center; min-width:36px; height:26px; padding:0 9px;
+      border-radius:8px; font-weight:700; font-size:14px; color:#fff}
+    .lock{color:var(--muted); font-size:13px}
+
+    .actions{display:flex; flex-wrap:wrap; gap:10px; margin:20px 0; align-items:center}
+    button,.btn{font:inherit; cursor:pointer; border:1px solid var(--line); background:var(--card);
+      color:var(--ink); padding:10px 20px; border-radius:980px; font-weight:500; transition:.15s}
+    button:hover,.btn:hover{background:var(--section); text-decoration:none}
+    button.primary,.btn.primary{background:var(--accent); border-color:var(--accent); color:#fff}
+    button.primary:hover{background:#0077ed; color:#fff}
+    button.pro,.btn.pro{background:var(--accent); border-color:var(--accent); color:#fff}
+    button.pro:hover{background:#0077ed; color:#fff}
+
+    .chart{color:var(--accent); padding:10px 6px 2px}
+
+    .upsell{background:#1d1d1f; color:#f5f5f7; border-radius:22px; padding:28px 26px 22px; margin:6px 0 4px;
+      position:relative; overflow:hidden}
+    .upsell::before{content:""; position:absolute; inset:-40%; pointer-events:none;
+      background:radial-gradient(closest-side, rgba(10,132,255,.45), transparent 70%);
+      filter:blur(46px); opacity:.55; animation:drift 16s ease-in-out infinite alternate}
+    .upsell > *{position:relative; z-index:1}
+    @keyframes drift{from{transform:translate(-12%,-8%) scale(1)} to{transform:translate(14%,12%) scale(1.15)}}
+    .upsell h3{margin:0 0 5px; font-size:24px; color:#fff; letter-spacing:-.02em}
+    .upsell p.lead{margin:0 0 18px; opacity:.78; font-size:15px}
+    .upsell ul{list-style:none; margin:0 0 18px; padding:0; display:grid; grid-template-columns:1fr 1fr; gap:12px 22px}
+    .upsell li{font-size:14px; line-height:1.45}
+    .upsell li b{display:block; font-size:14.5px; font-weight:600; margin-bottom:1px}
+    .upsell .cta{background:var(--accent); color:#fff; border:0; font-weight:500}
+    .upsell .cta:hover{background:#0077ed; color:#fff}
+    .plan-grid{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:4px}
+    .plan-card{display:flex; flex-direction:column; align-items:flex-start; gap:3px; width:100%;
+      text-align:left; background:rgba(255,255,255,.08); border:1px solid rgba(255,255,255,.18);
+      color:#fff; border-radius:14px; padding:16px 18px}
+    .plan-card:hover{background:rgba(255,255,255,.14); color:#fff}
+    .plan-card.featured{background:#fff; color:var(--ink); border-color:#fff}
+    .plan-card.featured:hover{background:#fff; color:var(--ink)}
+    .plan-card .pname{font-weight:600; font-size:16px}
+    .plan-card .pprice{font-weight:700; font-size:24px; letter-spacing:-.03em}
+    .plan-card .pline{font-weight:400; font-size:12.5px; opacity:.8; line-height:1.4}
+    .plan-card .pcta{margin-top:6px; font-weight:600; font-size:13px; color:#2997ff}
+    .plan-card.featured .pcta{color:var(--accent)}
+    .outcome-note{margin:16px 0 0; font-size:13.5px; background:rgba(255,255,255,.08);
+      padding:11px 14px; border-radius:12px}
+    @media(max-width:640px){ .plan-grid{grid-template-columns:1fr} }
+
+    .empty{padding:34px 16px; text-align:center; color:var(--muted)}
+    .foot{margin-top:50px; padding-top:20px; border-top:1px solid var(--line);
+      font-size:12px; color:var(--muted); display:flex; gap:9px; align-items:center}
+    .hero{background:var(--section); border-radius:24px; padding:60px 44px; margin-bottom:8px; text-align:center}
+    .hero h1{font-size:52px; margin:.1em auto .22em; max-width:16ch}
+    .hero p{font-size:19px; color:var(--muted); max-width:58ch; margin:.2em auto 0}
+    @media(max-width:640px){ .cards{grid-template-columns:1fr} .upsell ul{grid-template-columns:1fr}
+      h1{font-size:32px} .hero{padding:40px 22px} .hero h1{font-size:34px} .hero p{font-size:16px} }
+
+    /* --- Animations (Apple-like) --- */
+    @keyframes rise{from{opacity:0; transform:translateY(20px)} to{opacity:1; transform:none}}
+    .hero > *{animation:rise .8s cubic-bezier(.16,1,.3,1) both}
+    .hero > *:nth-child(2){animation-delay:.06s}
+    .hero > *:nth-child(3){animation-delay:.12s}
+    .hero > *:nth-child(4){animation-delay:.18s}
+    .hero > *:nth-child(5){animation-delay:.24s}
+    .reveal{opacity:0; transform:translateY(18px);
+      transition:opacity .7s cubic-bezier(.16,1,.3,1), transform .7s cubic-bezier(.16,1,.3,1)}
+    .reveal.in{opacity:1; transform:none}
+    .stat,.plan-card,.step,.feat .f{transition:transform .25s cubic-bezier(.16,1,.3,1), box-shadow .25s}
+    .stat:hover,.step:hover,.feat .f:hover{transform:translateY(-3px); box-shadow:0 14px 34px rgba(0,0,0,.08)}
+    button,.btn{transition:transform .12s ease, background .15s ease, color .15s ease, opacity .15s ease}
+    button:active,.btn:active{transform:scale(.97)}
+    .logo{transition:transform .4s cubic-bezier(.16,1,.3,1)}
+    .brand:hover .logo{transform:rotate(-25deg)}
+    .chart svg rect{transform-box:fill-box; transform-origin:bottom; animation:grow .7s cubic-bezier(.16,1,.3,1) both}
+    @keyframes grow{from{transform:scaleY(0)} to{transform:scaleY(1)}}
+    @media(prefers-reduced-motion:reduce){
+      *,.hero>*{animation:none!important; transition:none!important}
+      .reveal{opacity:1; transform:none}
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <a class="brand" href="/">
+        <span class="logo">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 12a7 7 0 1 0 2-4.9"/><path d="M7 3v4h4"/>
+          </svg>
+        </span>
+        <span class="name">Revoilà<small>Relance intelligente pour restaurants</small></span>
+      </a>
+      {% block topright %}{% endblock %}
+    </div>
+    {% block content %}{% endblock %}
+    <p class="foot">Revoilà — vos clients reviennent, tout seuls.</p>
+  </div>
+  <script>
+  (function(){
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // Révélation au défilement
+    var revealEls = document.querySelectorAll('.reveal');
+    if (reduce || !('IntersectionObserver' in window)) {
+      revealEls.forEach(function(e){ e.classList.add('in'); });
+    } else {
+      var io = new IntersectionObserver(function(entries){
+        entries.forEach(function(en){
+          if (en.isIntersecting){ en.target.classList.add('in'); io.unobserve(en.target); }
+        });
+      }, { threshold: 0.12 });
+      revealEls.forEach(function(e){ io.observe(e); });
+    }
+
+    // Compteurs qui s'incrémentent
+    function countUp(el){
+      var target = parseFloat(el.getAttribute('data-count'));
+      var suffix = el.getAttribute('data-suffix') || '';
+      if (isNaN(target)) return;
+      var dec = (el.getAttribute('data-count').indexOf('.') >= 0) ? 1 : 0;
+      var dur = 900, start = performance.now();
+      function fmt(v){ return (dec ? v.toFixed(1) : Math.round(v)).toString() + suffix; }
+      el.textContent = fmt(0);
+      function tick(now){
+        var p = Math.min(1, (now - start) / dur);
+        var eased = 1 - Math.pow(1 - p, 3);
+        el.textContent = fmt(target * eased);
+        if (p < 1) requestAnimationFrame(tick); else el.textContent = fmt(target);
+      }
+      requestAnimationFrame(tick);
+    }
+    var counters = document.querySelectorAll('[data-count]');
+    if (reduce || !('IntersectionObserver' in window)) {
+      counters.forEach(function(el){
+        el.textContent = el.getAttribute('data-count') + (el.getAttribute('data-suffix') || '');
+      });
+    } else {
+      var io2 = new IntersectionObserver(function(entries){
+        entries.forEach(function(en){
+          if (en.isIntersecting){ countUp(en.target); io2.unobserve(en.target); }
+        });
+      }, { threshold: 0.5 });
+      counters.forEach(function(el){ io2.observe(el); });
+    }
+  })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+
+# Config locale (ne jamais committer les secrets)
+.env
+
+# Base de données locale
+winback.db
+winback.db-journal
+
+# macOS
+.DS_Store

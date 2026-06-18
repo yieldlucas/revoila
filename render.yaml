@@ -1,0 +1,34 @@
+# Déploiement Render (https://render.com) — un clic via "Blueprint".
+# Service web seul (SQLite local). La waitlist est aussi capturée par email
+# (WAITLIST_NOTIFY_EMAIL) pour ne rien perdre malgré le disque éphémère du plan gratuit.
+services:
+  - type: web
+    name: revoila
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: DRY_RUN
+        value: "true"            # passer à "false" une fois les clés en place
+      - key: PUBLIC_BASE_URL
+        sync: false              # ex. https://revoila.onrender.com
+      - key: WAITLIST_NOTIFY_EMAIL
+        sync: false              # ton email : reçois chaque inscrit
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: BREVO_API_KEY
+        sync: false
+      - key: EMAIL_FROM
+        sync: false
+      - key: SMS_PROVIDER
+        value: "none"
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: STRIPE_PRICE_STANDARD
+        sync: false
+      - key: STRIPE_PRICE_PRO
+        sync: false

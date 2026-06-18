@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% block title %}{{ restaurant.name }} — Revoilà{% endblock %}
+{% block topright %}
+  {% if restaurant.plan == "pro" %}<span class="badge pro">PRO</span>
+  {% elif restaurant.plan == "standard" %}<span class="tag habitue">STANDARD</span>
+  {% else %}<span class="tag occasionnel">Formule Free</span>{% endif %}
+{% endblock %}
+{% block content %}
+  <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap">
+    <div>
+      <h1 style="margin-bottom:2px">{{ restaurant.name }}</h1>
+      <span class="muted">Clients à faire revenir</span>
+    </div>
+    <span class="badge" style="background:{{ sub.color }}">{{ sub.label }}</span>
+  </div>
+
+  <div class="cards">
+    <div class="stat"><div class="n" data-count="{{ roi.targeted }}">{{ roi.targeted }}</div><div class="l">clients à relancer</div></div>
+    <div class="stat"><div class="n" data-count="{{ roi.expected_returns }}">{{ roi.expected_returns }}</div><div class="l">retours estimés</div></div>
+    <div class="stat"><div class="n" data-count="{{ roi.estimated_revenue }}" data-suffix=" €">{{ roi.estimated_revenue }} €</div><div class="l">revenu estimé</div></div>
+  </div>
+
+  <div class="actions">
+    <form method="post" action="/r/{{ restaurant.id | urlencode }}/run-cycle?token={{ token | urlencode }}">
+      <button type="submit" class="primary">Lancer un cycle de relance</button>
+    </form>
+    {% if quota %}
+    <span class="pill" title="Quota du plan Free ce mois-ci">Free : {{ quota.used }}/{{ quota.cap }} relances ce mois</span>
+    {% endif %}
+  </div>
+
+  <div class="panel" style="margin:6px 0 4px">
+    <div class="pad" style="display:flex; flex-wrap:wrap; gap:18px; align-items:center; justify-content:space-between">
+      <div>
+        <div class="muted" style="font-size:12px; text-transform:uppercase; letter-spacing:.05em">Retours récupérés (attribués)</div>
+        <div style="font-size:24px; font-weight:800"><span data-count="{{ outcome_billing.recovered }}">{{ outcome_billing.recovered }}</span>
+          <span class="muted" style="font-size:14px; font-weight:500">· {{ outcome_billing.recovered_revenue }} € de CA récupéré</span>
+        </div>
+      </div>
+      <div style="text-align:right">
+        <div class="muted" style="font-size:12px">Si vous étiez en « paiement au résultat »</div>
+        <div style="font-weight:700">{{ outcome_billing.due_per_client }} €
+          <span class="muted" style="font-weight:500">(ou {{ outcome_billing.due_pct_revenue }} € au %)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {% if upgrades %}
+  <div class="upsell">
+    <h3>Faites travailler Revoilà pour vous</h3>
+    <p class="lead">Vous relancez à l'aveugle. Passez à la vitesse supérieure — vos données deviennent du revenu.</p>
+    <ul>
+      {% for title, desc in pro_highlights %}
+      <li><b>{{ title }}</b><span style="opacity:.9">{{ desc }}</span></li>
+      {% endfor %}
+    </ul>
+    <div class="plan-grid">
+      {% for p in upgrades %}
+      <form method="post" action="/r/{{ restaurant.id | urlencode }}/billing/checkout?token={{ token | urlencode }}&tier={{ p.id }}">
+        <button type="submit" class="plan-card {% if p.id == 'pro' %}featured{% endif %}">
+          <span class="pname">{{ p.name }}{% if p.id == 'pro' %} ★{% endif %}</span>
+          <span class="pprice">{{ p.price }}</span>
+          <span class="pline">{{ p.line }}</span>
+          <span class="pcta">Choisir {{ p.name }} →</span>
+        </button>
+      </form>
+      {% endfor %}
+    </div>
+    <p class="outcome-note">💡 {{ outcome.label }} : ~{{ outcome.per_client }} € par client réactivé
+      (estimé à <b>{{ outcome_estimate }} €</b> ce mois-ci) — vous ne payez que si ça marche.</p>
+  </div>
+  {% endif %}
+
+  <h2>Envois — 14 derniers jours</h2>
+  <div class="panel"><div class="pad chart">{{ chart_svg | safe }}</div></div>
+
+  <h2>Clients à relancer
+    {% if features.scoring %}<span class="muted" style="text-transform:none;letter-spacing:0">· triés par score de priorité</span>{% endif %}
+  </h2>
+  <div class="panel">
+    <table>
+      <thead><tr>
+        <th>Priorité</th><th>Client</th><th>Segment</th><th>Absence</th>
+        <th>Visites</th><th>Plat préféré</th><th>Canal</th>
+      </tr></thead>
+      <tbody>
+      {% for row in rows %}
+        <tr>
+          <td>
+            {% if row.score is not none %}
+              <span class="score" style="background:{{ score_color(row.score) }}">{{ row.score }}</span>
+            {% else %}
+              <span class="lock" title="Disponible avec Revoilà Pro">🔒 Pro</span>
+            {% endif %}
+          </td>
+          <td><strong>{{ row.c.first_name }}</strong></td>
+          <td>
+            {% if row.segment %}<span class="tag {{ row.segment|lower }}">{{ row.segment }}</span>
+            {% else %}<span class="muted">—</span>{% endif %}
+          </td>
+          <td>{{ row.c.days_since_last_visit() }} j</td>
+          <td>{{ row.c.visits }}</td>
+          <td>{{ row.c.favorite_dish or "—" }}</td>
+          <td><span class="pill">{{ row.channel }}</span></td>
+        </tr>
+      {% else %}
+        <tr><td colspan="7" class="empty">Aucun client à relancer pour le moment 🎉</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Derniers envois — {{ total_logged }} au total</h2>
+  <div class="panel">
+    <table>
+      <thead><tr><th>Date</th><th>Client</th><th>Canal</th><th>Statut</th><th>Retour</th></tr></thead>
+      <tbody>
+      {% for m in logs %}
+        <tr>
+          <td>{{ m.sent_at.strftime("%Y-%m-%d %H:%M") }}</td>
+          <td>{{ m.customer_id }}</td>
+          <td>{{ m.channel }}</td>
+          <td><span class="pill {{ m.status }}">{{ m.status }}</span></td>
+          <td>{% if m.converted_at %}<span class="pill sent">✓ revenu</span>{% else %}<span class="muted">—</span>{% endif %}</td>
+        </tr>
+      {% else %}
+        <tr><td colspan="5" class="empty">Aucun envoi pour l'instant.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% endblock %}

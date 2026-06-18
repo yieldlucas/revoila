@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+.env
+winback.db
+winback.db-journal
+.DS_Store
+.git/

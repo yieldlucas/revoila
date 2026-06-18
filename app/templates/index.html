@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Revoilà — la relance intelligente pour restaurants{% endblock %}
+{% block content %}
+  <div class="hero">
+    <span class="tag habitue">Restaurants indépendants</span>
+    <h1>Vos clients perdus reviennent. Tout seuls.</h1>
+    <p>Revoilà repère vos clients qui ne sont pas revenus, calcule lesquels rapportent
+       le plus, et les relance automatiquement par SMS et email — sans que vous touchiez à rien.</p>
+  </div>
+
+  <h2>Vos restaurants</h2>
+  <div class="panel">
+    <table>
+      <thead><tr><th>Restaurant</th><th>Formule</th><th></th></tr></thead>
+      <tbody>
+      {% for r in restaurants %}
+        <tr>
+          <td><strong>{{ r.name }}</strong> <span class="muted">· {{ r.id }}</span></td>
+          <td>
+            {% if r.plan == "pro" %}<span class="badge pro">PRO</span>
+            {% elif r.plan == "standard" %}<span class="tag habitue">Standard</span>
+            {% else %}<span class="tag occasionnel">Free</span>{% endif %}
+          </td>
+          <td style="text-align:right">
+            <a class="btn" href="/r/{{ r.id | urlencode }}?token={{ r.dashboard_token | urlencode }}">Ouvrir →</a>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <p class="foot">En production, l'accès se fait par compte authentifié — pas par token en clair.</p>
+{% endblock %}

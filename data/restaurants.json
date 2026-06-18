@@ -1,0 +1,26 @@
+[
+  {
+    "id": "resto1",
+    "name": "Chez Lucas",
+    "tone": "chaleureux et convivial",
+    "dashboard_token": "demo-token-resto1",
+    "plan": "pro",
+    "winback_days": 45,
+    "min_visits": 2,
+    "cooldown_days": 30,
+    "avg_ticket": 35,
+    "winback_conversion": 0.15
+  },
+  {
+    "id": "resto2",
+    "name": "La Trattoria",
+    "tone": "familial et gourmand",
+    "dashboard_token": "demo-token-resto2",
+    "plan": "free",
+    "winback_days": 60,
+    "min_visits": 2,
+    "cooldown_days": 30,
+    "avg_ticket": 28,
+    "winback_conversion": 0.12
+  }
+]

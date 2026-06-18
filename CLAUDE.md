@@ -102,6 +102,11 @@ Demandé par les premiers retours terrain. À coder après validation.
 - [ ] Récompense VIP / fidélité.
 - Chaque scénario : activable à la carte, personnalisé (prénom, plat, segment), soumis aux mêmes garde-fous (cooldown, plafonds, opt-out).
 
+**Différenciation offre (important)**
+- **Au résultat** = win-back uniquement (seul retour mesurable/attribuable), facturé ~5 €/client revenu.
+- **Abonnement Pro (99 €)** = win-back illimité + toutes les campagnes proactives + validation/ciblage + suivi.
+- Donc : les campagnes proactives (anniversaire, offres, soir creux…) sont à gater sur l'abonnement Pro, pas accessibles en mode « au résultat ».
+
 ## Conventions
 
 - Code et commentaires : noms en anglais, c'est plus standard.

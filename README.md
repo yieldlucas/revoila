@@ -8,17 +8,17 @@ partir des données de la caisse. (Nom de code projet : `winback-resto`.)
 
 ## Tarification
 
-Échelle pensée pour amorcer puis monter en gamme (voir `app/plans.py`) :
+Offre simple (voir `app/plans.py`) : **essai gratuit 14 jours**, puis deux façons de payer :
 
-- **Free (0 €)** : relance win-back par email, anti-spam, désinscription RGPD.
-- **Standard (49 €/mois)** : + **SMS multi-canal**. Le palier d'entrée payant.
-- **Pro (149 €/mois)** : + l'**intelligence** — **score de priorité RFM**, **segmentation**
-  (VIP / Habitué / Occasionnel), **messages adaptés au segment**, **relance priorisée**.
-  C'est le cœur de la proposition de valeur (`app/scoring.py`).
+- **Abonnement Pro — 99 €/mois** : tout inclus, sans limite — SMS + email, score de
+  priorité RFM, segmentation, messages sur-mesure, **validation avant envoi**, ciblage,
+  et garde-fous anti-sur-sollicitation (plafonds + heures calmes).
+- **Au résultat** : ~5 €/client réellement réactivé (ou % du CA récupéré), sans abonnement.
+  Le client ne paie que si ça marche — l'argument le plus fort au démarrage.
 
-**Alternative — paiement au résultat** : ~5 €/client réactivé (ou % du CA récupéré).
-Le client ne paie que si ça marche — l'argument le plus fort au démarrage. Le dashboard
-affiche l'estimation du coût « au résultat » du mois.
+Un seul plan applicatif (`pro`) ; l'accès réel est piloté par le **statut d'abonnement**
+(essai / actif / expiré) dans `app/billing.py`. Le dashboard affiche l'estimation du
+coût « au résultat » du mois.
 
 ## Démarrage rapide
 

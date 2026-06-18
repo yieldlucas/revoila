@@ -1,11 +1,11 @@
-"""Test du quota mensuel de relances sur le plan Free."""
+"""Le plan unique Pro n'a pas de quota mensuel : tous les clients éligibles sont relancés."""
 from datetime import date, timedelta
 
 from app import scheduler
 from app.models import Customer
 from app.restaurants import get_restaurant
 
-FREE = get_restaurant("resto2")  # plan free, cap 10/mois
+RESTO = get_restaurant("resto2")  # plan pro
 
 
 def _lapsed(n):
@@ -21,12 +21,12 @@ def _lapsed(n):
     ]
 
 
-def test_free_plafonne_les_relances(monkeypatch):
+def test_pro_relance_sans_quota(monkeypatch):
     class FakeSource:
         def get_customers(self, restaurant_id):
             return _lapsed(15)
 
     monkeypatch.setattr(scheduler, "get_default_source", lambda: FakeSource())
-    summary = scheduler.run_cycle_for(FREE)
-    assert summary["sent"] == 10          # plafonné à 10
-    assert "capped" in summary
+    summary = scheduler.run_cycle_for(RESTO)
+    assert summary["sent"] == 15           # aucun plafond mensuel
+    assert "capped" not in summary

@@ -13,7 +13,7 @@ class Restaurant:
     name: str
     tone: str
     dashboard_token: str
-    plan: str = "free"  # "free" ou "pro"
+    plan: str = "pro"  # plan unique (l'accès réel dépend du statut d'abonnement)
     winback_days: int = config.WINBACK_DAYS
     min_visits: int = config.MIN_VISITS
     cooldown_days: int = config.COOLDOWN_DAYS
@@ -27,7 +27,7 @@ class Restaurant:
             name=d["name"],
             tone=d.get("tone", "chaleureux et convivial"),
             dashboard_token=d.get("dashboard_token", ""),
-            plan=d.get("plan", "free"),
+            plan=d.get("plan", "pro"),
             winback_days=int(d.get("winback_days", config.WINBACK_DAYS)),
             min_visits=int(d.get("min_visits", config.MIN_VISITS)),
             cooldown_days=int(d.get("cooldown_days", config.COOLDOWN_DAYS)),

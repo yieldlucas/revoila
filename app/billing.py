@@ -59,14 +59,15 @@ _BADGES = {
 
 
 def subscription_view(restaurant_id: str) -> dict:
-    """Vue prête pour l'UI : libellé, couleur, et si le service est actif."""
+    """Vue prête pour l'UI : libellé, couleur, actif, et abonné payant."""
     sub = db.get_subscription(restaurant_id)
     active = is_active(restaurant_id)
+    status = sub.get("status") if sub else None
+    subscribed = status == "active"
     if sub is None:
-        return {"label": "Essai (non configuré)", "color": "#9a6700", "active": active}
-    status = sub.get("status", "inconnu")
+        return {"label": "Essai", "color": "#9a6700", "active": active, "subscribed": False}
     label, color = _BADGES.get(status, (status, "#666"))
-    return {"label": label, "color": color, "active": active}
+    return {"label": label, "color": color, "active": active, "subscribed": subscribed}
 
 
 def start_trial(restaurant_id: str, days: int | None = None) -> None:

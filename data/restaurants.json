@@ -16,7 +16,7 @@
     "name": "La Trattoria",
     "tone": "familial et gourmand",
     "dashboard_token": "demo-token-resto2",
-    "plan": "free",
+    "plan": "pro",
     "winback_days": 60,
     "min_visits": 2,
     "cooldown_days": 30,

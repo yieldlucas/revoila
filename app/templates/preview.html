@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Préparer une relance — {{ restaurant.name }}{% endblock %}
+{% block topright %}<a class="btn" href="/r/{{ restaurant.id | urlencode }}?token={{ token | urlencode }}">← Dashboard</a>{% endblock %}
+{% block content %}
+  <h1 style="margin-bottom:2px">Préparer une relance</h1>
+  <p class="muted">Cochez les clients à relancer — <strong>rien n'est envoyé sans votre validation</strong>. Vous pouvez cibler par segment.</p>
+
+  <div class="actions">
+    <span class="muted">Cibler :</span>
+    <a class="btn {% if segment=='all' %}primary{% endif %}" href="?token={{ token | urlencode }}&segment=all">Tous</a>
+    {% for s in segments %}
+    <a class="btn {% if segment==s %}primary{% endif %}" href="?token={{ token | urlencode }}&segment={{ s }}">{{ s }}</a>
+    {% endfor %}
+  </div>
+
+  <form method="post" action="/r/{{ restaurant.id | urlencode }}/preview/send?token={{ token | urlencode }}">
+    <div class="panel">
+      <table>
+        <thead><tr>
+          <th><input type="checkbox" id="checkall" checked aria-label="Tout cocher"></th>
+          <th>Priorité</th><th>Client</th><th>Segment</th><th>Canal</th><th>Message qui sera envoyé</th>
+        </tr></thead>
+        <tbody>
+        {% for row in rows %}
+          <tr>
+            <td><input type="checkbox" name="ids" value="{{ row.c.id }}" checked></td>
+            <td><span class="score" style="background:{{ score_color(row.score) }}">{{ row.score }}</span></td>
+            <td><strong>{{ row.c.first_name }}</strong> <span class="muted">· {{ row.c.days_since_last_visit() }} j</span></td>
+            <td><span class="tag {{ row.segment|lower }}">{{ row.segment }}</span></td>
+            <td><span class="pill">{{ row.channel }}</span></td>
+            <td class="muted" style="font-size:12.5px; max-width:340px">{{ row.message }}</td>
+          </tr>
+        {% else %}
+          <tr><td colspan="6" class="empty">Aucun client à relancer pour ce filtre.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="actions">
+      <button type="submit" class="pro">Envoyer la sélection</button>
+      <span class="muted">{{ rows|length }} client(s) proposé(s)</span>
+    </div>
+  </form>
+
+  <script>
+    var ca = document.getElementById('checkall');
+    if (ca) ca.addEventListener('change', function(){
+      document.querySelectorAll('input[name=ids]').forEach(function(c){ c.checked = ca.checked; });
+    });
+  </script>
+{% endblock %}

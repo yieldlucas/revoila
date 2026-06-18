@@ -45,21 +45,39 @@ def find_lapsed_customers(
     logs: list[MessageLog] | None = None,
     opt_outs: set[str] | None = None,
     today: date | None = None,
+    exclude_ids: set[str] | None = None,
+    annual_cap: int | None = None,
 ) -> list[Customer]:
     """Liste des clients à relancer : endormis, non désinscrits, anti-spam appliqué.
 
     L'anti-spam est précalculé en un seul passage sur les logs (O(n+m)) plutôt que
     de rescanner les logs pour chaque client.
+
+    - `exclude_ids` : clients à ne jamais relancer (liste d'exclusion, Pro).
+    - `annual_cap` : si fourni, exclut les clients déjà relancés `annual_cap` fois
+      ou plus sur les 365 derniers jours (plafond de fréquence, Pro).
     """
     logs = logs or []
     opt_outs = opt_outs or set()
+    exclude_ids = exclude_ids or set()
 
-    cutoff = datetime.utcnow() - timedelta(days=restaurant.cooldown_days)
+    now = datetime.utcnow()
+    cutoff = now - timedelta(days=restaurant.cooldown_days)
     recent_ids = {log.customer_id for log in logs if log.sent_at >= cutoff}
 
+    capped_ids: set[str] = set()
+    if annual_cap is not None:
+        year_ago = now - timedelta(days=365)
+        counts: dict[str, int] = {}
+        for log in logs:
+            if log.sent_at >= year_ago:
+                counts[log.customer_id] = counts.get(log.customer_id, 0) + 1
+        capped_ids = {cid for cid, n in counts.items() if n >= annual_cap}
+
+    blocked = recent_ids | capped_ids | exclude_ids
     return [
         c for c in customers
-        if c.id not in recent_ids and is_lapsed(c, restaurant, today, opt_outs)
+        if c.id not in blocked and is_lapsed(c, restaurant, today, opt_outs)
     ]
 
 

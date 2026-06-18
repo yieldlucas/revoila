@@ -4,7 +4,7 @@ Multi-tenant : un cycle par restaurant. Envois persistés en SQLite (app/db.py).
 """
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, datetime
 
 from apscheduler.schedulers.background import BackgroundScheduler
 
@@ -19,8 +19,12 @@ from .winback import find_lapsed_customers
 logger = get_logger(__name__)
 
 
-def run_cycle_for(restaurant: Restaurant) -> dict:
-    """Un cycle complet de win-back pour un restaurant. Renvoie un résumé."""
+def run_cycle_for(restaurant: Restaurant, respect_quiet: bool = False) -> dict:
+    """Un cycle complet de win-back pour un restaurant. Renvoie un résumé.
+
+    `respect_quiet` : True pour le cycle automatique (n'envoie pas en heures calmes
+    sur les plans qui ont l'option). Le déclenchement manuel ignore les heures calmes.
+    """
     db.init_db()
 
     # Pas d'abonnement actif => on ne déclenche rien.
@@ -33,6 +37,13 @@ def run_cycle_for(restaurant: Restaurant) -> dict:
             "skipped": "inactive_subscription",
         }
 
+    # Pro : heures calmes (cycle auto uniquement).
+    if (respect_quiet and plans.has(restaurant.plan, "quiet_hours")
+            and plans.in_quiet_hours(datetime.now())):
+        logger.info("Cycle %s reporté : heures calmes.", restaurant.id)
+        return {"restaurant_id": restaurant.id, "detected": 0, "sent": 0,
+                "skipped": "quiet_hours"}
+
     source = get_default_source()
     customers = source.get_customers(restaurant.id)
 
@@ -42,7 +53,10 @@ def run_cycle_for(restaurant: Restaurant) -> dict:
     logs = db.get_logs(restaurant.id)          # pour l'anti-spam
     opt_outs = db.get_opt_outs(restaurant.id)  # désinscriptions RGPD
 
-    targets = find_lapsed_customers(customers, restaurant, logs=logs, opt_outs=opt_outs)
+    targets = find_lapsed_customers(
+        customers, restaurant, logs=logs, opt_outs=opt_outs,
+        annual_cap=plans.annual_cap(restaurant.plan),  # plafond fréquence (Pro)
+    )
 
     # Pro : on relance d'abord les clients les plus rentables (priorisation RFM).
     if plans.features(restaurant.plan)["prioritized"]:
@@ -87,7 +101,7 @@ def run_cycle(restaurant_id: str) -> dict:
 
 def run_all() -> list[dict]:
     """Lance le cycle pour tous les restaurants (utilisé par le scheduler)."""
-    return [run_cycle_for(r) for r in get_all_restaurants()]
+    return [run_cycle_for(r, respect_quiet=True) for r in get_all_restaurants()]
 
 
 def start_scheduler() -> BackgroundScheduler:

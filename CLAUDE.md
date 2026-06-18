@@ -79,6 +79,29 @@ winback-resto/
   - Migration SQLite → Postgres (réimplémenter `app/db.py` avec `psycopg`, mêmes signatures) puis déployer.
   - Compléter `LightspeedDataSource` une fois le statut partenaire validé.
 
+## Roadmap produit (post-validation) — contrôle & scénarios
+
+Demandé par les premiers retours terrain. À coder après validation.
+
+**Contrôle du restaurateur (priorité haute — objection fréquente)**
+- [ ] **Mode validation manuelle** : l'app propose la liste (clients + message), le patron coche/décoche avant l'envoi. Choix global : `auto` vs `je valide à chaque fois`.
+- [ ] **Ciblage par filtres/segments** : ne relancer que certains segments (VIP / Habitué / Occasionnel) ou seuils (dépense min, nb visites, fenêtre d'absence). 
+- [ ] **Liste d'exclusion** : clients « ne jamais relancer ».
+
+**Anti-sur-sollicitation (en partie déjà là)**
+- [x] Cooldown `COOLDOWN_DAYS` (jamais 2 relances rapprochées) — déjà dans `winback.py`.
+- [x] Opt-out RGPD — déjà.
+- [ ] **Plafonds de fréquence** : max 1 relance/client/mois + plafond annuel (ex. 4-6/an).
+- [ ] **Heures calmes** : pas d'envoi tard le soir / dimanche.
+
+**Scénarios de messages (au-delà du win-back — affichés sur la landing)**
+- [ ] Anniversaire (+ offre d'anniversaire).
+- [ ] Offre limitée datée (de telle date à telle date, % de réduction).
+- [ ] Soir creux à remplir (offre ponctuelle ciblée).
+- [ ] Bienvenue après 1ʳᵉ visite.
+- [ ] Récompense VIP / fidélité.
+- Chaque scénario : activable à la carte, personnalisé (prénom, plat, segment), soumis aux mêmes garde-fous (cooldown, plafonds, opt-out).
+
 ## Conventions
 
 - Code et commentaires : noms en anglais, c'est plus standard.

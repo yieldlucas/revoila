@@ -99,12 +99,26 @@
   </div>
 </div>
 
+<div class="section">
+  {% include "_phone_demo.html" %}
+</div>
+
 <div class="section reveal">
   <h2>Comment ça marche</h2>
   <div class="steps">
     <div class="step"><div class="k">1</div><b>Connectez votre caisse</b><p class="muted">Revoilà lit l'historique de vos clients (qui vient, quand, combien). Rien à saisir.</p></div>
     <div class="step"><div class="k">2</div><b>Il détecte et relance</b><p class="muted">Les clients endormis sont repérés, priorisés par valeur, et relancés au bon moment.</p></div>
     <div class="step"><div class="k">3</div><b>Vos clients reviennent</b><p class="muted">Chaque retour est tracé. Vous voyez précisément le chiffre d'affaires récupéré.</p></div>
+  </div>
+</div>
+
+<div class="section reveal">
+  <h2>Le coût des clients qu'on ne revoit plus</h2>
+  <p class="muted" style="margin:-6px 0 16px">Estimation pour un restaurant type de 60 couverts/jour — la plupart ne récupèrent jamais ces clients.</p>
+  <div class="nums">
+    <div class="b"><div class="big" data-count="30" data-suffix=" %">30 %</div><div class="lab">des clients ne repassent pas</div></div>
+    <div class="b"><div class="big" data-count="320" data-suffix=" €">320 €</div><div class="lab">de CA dormant chaque mois</div></div>
+    <div class="b"><div class="big" data-count="12">12</div><div class="lab">clients récupérables / mois</div></div>
   </div>
 </div>
 
@@ -118,26 +132,64 @@
 </div>
 
 <div class="section reveal">
-  <h2>Deux façons de payer</h2>
-  <p class="muted" style="margin:-6px 0 14px">Choisissez ce qui vous rassure : un abonnement mensuel prévisible, ou le paiement au résultat — sans engagement.</p>
+  <h2>Pas que de la relance — tous les messages qui remplissent vos tables</h2>
+  <p class="muted" style="margin:-6px 0 16px">Revoilà envoie le bon message au bon moment, automatiquement. Quelques exemples :</p>
+  <div class="scenarios">
+    <div class="scen">
+      <div class="h"><b>🔁 Client perdu</b><span class="chan">SMS</span></div>
+      <div class="msg">Bonjour Camille, ça fait un moment chez Chez Lucas ! On garde votre magret au chaud 🍽️</div>
+    </div>
+    <div class="scen">
+      <div class="h"><b>🎂 Anniversaire</b><span class="chan">SMS</span></div>
+      <div class="msg">Joyeux anniversaire Karim ! 🎉 Pour fêter ça, votre dessert est offert tout le mois chez nous.</div>
+    </div>
+    <div class="scen">
+      <div class="h"><b>🎁 Offre d'anniversaire</b><span class="chan">Email</span></div>
+      <div class="msg">-20 % sur votre repas d'anniversaire, valable jusqu'à la fin du mois. On vous réserve la meilleure table !</div>
+    </div>
+    <div class="scen">
+      <div class="h"><b>⏳ Offre limitée</b><span class="chan">SMS</span></div>
+      <div class="msg">Cette semaine seulement : -15 % du mardi au jeudi soir. Réservez votre table avant qu'il n'y ait plus de place 👇</div>
+    </div>
+    <div class="scen">
+      <div class="h"><b>🌙 Soir creux à remplir</b><span class="chan">SMS</span></div>
+      <div class="msg">Mardi soir au calme ? Venez ce soir, l'apéritif est offert pour 2. À tout de suite !</div>
+    </div>
+    <div class="scen">
+      <div class="h"><b>✨ Après une 1ʳᵉ visite</b><span class="chan">Email</span></div>
+      <div class="msg">Merci pour votre visite ! Un café offert à votre prochain passage pour vous revoir bientôt ☕</div>
+    </div>
+  </div>
+  <p class="muted" style="margin:14px 0 0; font-size:13px">Chaque scénario est automatique et personnalisé (prénom, plat préféré, segment). Vous choisissez ceux que vous voulez activer.</p>
+</div>
 
-  <h3 style="margin:0 0 10px; font-size:16px">Option 1 — Abonnement mensuel</h3>
-  <div class="price3">
-    <div class="pc">
-      <div><b>Free</b></div><div class="amt">0 €</div>
-      <ul><li>Relance par email</li><li>Jusqu'à 10 relances/mois</li><li>Désinscription RGPD</li></ul>
-    </div>
-    <div class="pc">
-      <div><b>Standard</b></div><div class="amt">49 €<span class="muted" style="font-size:13px">/mois</span></div>
-      <ul><li>Tout Free</li><li>SMS + email illimités</li><li>Multi-canal</li></ul>
-    </div>
+<div class="section reveal">
+  <h2>Un essai gratuit, puis deux façons de payer</h2>
+  <p class="muted" style="margin:-6px 0 16px"><b>14 jours d'essai gratuit</b>, sans carte bancaire. Ensuite, vous choisissez — et vous pouvez changer d'avis.</p>
+
+  <div class="price3" style="grid-template-columns:1fr 1fr; max-width:720px">
     <div class="pc hot">
-      <div><b>Pro</b> <span class="badge pro">RECOMMANDÉ</span></div><div class="amt">149 €<span class="muted" style="font-size:13px">/mois</span></div>
-      <ul><li>Tout Standard</li><li>Relances dans le bon ordre (score + segments)</li><li>Messages sur-mesure</li></ul>
+      <div><b>Abonnement Pro</b> <span class="badge pro">SIMPLE</span></div>
+      <div class="amt">99 €<span class="muted" style="font-size:13px">/mois</span></div>
+      <ul>
+        <li>Tout inclus, sans limite</li>
+        <li><b>Validation avant envoi</b> + ciblage par segment</li>
+        <li>Score de priorité + messages sur-mesure</li>
+        <li>Anti-harcèlement renforcé (plafonds + heures calmes)</li>
+      </ul>
+    </div>
+    <div class="pc">
+      <div><b>Au résultat</b> <span class="tag habitue">sans risque</span></div>
+      <div class="amt">~{{ outcome.per_client | round | int }} €<span class="muted" style="font-size:13px">/client revenu</span></div>
+      <ul>
+        <li>Aucun abonnement</li>
+        <li>Vous ne payez que les retours réels</li>
+        <li>Idéal pour démarrer en confiance</li>
+      </ul>
     </div>
   </div>
 
-  <h3 style="margin:22px 0 10px; font-size:16px">Option 2 — Payez au résultat <span class="tag habitue">sans risque</span></h3>
+  <h3 style="margin:24px 0 10px; font-size:16px">Comment marche le « au résultat » ?</h3>
   <div class="panel"><div class="pad">
     <p style="margin:0 0 12px"><b>Vous ne payez que pour les clients qui reviennent vraiment.</b>
       ~{{ outcome.per_client | round | int }} € par client réactivé (ou {{ (outcome.pct_revenue * 100) | round | int }} % du CA récupéré). Aucun abonnement.</p>
@@ -147,6 +199,17 @@
       <div class="step"><div class="k">3</div><b>Vous payez ce retour</b><p class="muted">Seulement les retours réels sont facturés, preuve à l'appui.</p></div>
     </div>
   </div></div>
+</div>
+
+<div class="section reveal faq">
+  <h2>Questions fréquentes</h2>
+  <details><summary>Ça marche avec ma caisse ?</summary><p>Revoilà se connecte à votre logiciel de caisse pour lire l'historique clients. Les intégrations arrivent (dont Zelty) — dites-nous laquelle vous utilisez, on vous prévient dès qu'elle est prête.</p></details>
+  <details><summary>C'est compliqué à installer ?</summary><p>Non. On se branche sur la caisse, vous n'avez rien à saisir ni à gérer — tout tourne en arrière-plan.</p></details>
+  <details><summary>Je garde le contrôle de qui est relancé ?</summary><p>Oui, totalement. Vous choisissez les clients à relancer (par segment : VIP, habitués… ou par filtres) et vous pouvez valider chaque envoi avant qu'il ne parte. Rien n'est envoyé sans votre accord.</p></details>
+  <details><summary>Mes clients ne vont pas se sentir harcelés ?</summary><p>Non : un même client n'est jamais recontacté à répétition (délai de sécurité entre deux messages + plafond de fréquence), et la désinscription est toujours possible en un clic.</p></details>
+  <details><summary>Et mes données ? Le RGPD ?</summary><p>Vos données restent les vôtres. Le consentement marketing et la désinscription sont gérés automatiquement, conformément au RGPD.</p></details>
+  <details><summary>Je n'ai pas le temps de m'en occuper</summary><p>C'est tout l'intérêt : Revoilà détecte, rédige et envoie les relances tout seul. Vous voyez juste les retours.</p></details>
+  <details><summary>Combien ça coûte vraiment ?</summary><p>14 jours d'essai gratuit, puis au choix : 99 €/mois tout inclus, ou ~5 € par client réellement revenu (sans abonnement). Vous choisissez, et vous pouvez changer.</p></details>
 </div>
 
 <div class="section" id="waitlist">

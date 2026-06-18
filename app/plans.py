@@ -1,37 +1,19 @@
-"""Plans tarifaires et fonctionnalités associées (gating Free / Standard / Pro).
+"""Offre Revoilà — un seul abonnement + paiement au résultat.
 
-Échelle de prix (décidée pour amorcer puis monter en gamme) :
-- Free (0 €)      : relance email, anti-spam, RGPD. Pour entrer sans friction.
-- Standard (49 €) : + SMS multi-canal. Le palier d'entrée payant.
-- Pro (149 €)     : + l'intelligence (score RFM, segments, messages sur-mesure,
-                    relance priorisée). C'est le cœur de la valeur.
+Structure (simple, décidée après les premiers retours) :
+- **Essai gratuit 14 jours** (géré côté facturation via le statut d'abonnement).
+- **Abonnement Pro — 99 €/mois** : tout inclus, sans limite.
+- **Au résultat** : alternative sans abonnement, ~5 €/client réellement réactivé.
 
-Alternative : paiement au résultat (outcome) — le client ne paie qu'en fonction
-des clients réellement réactivés. Argument de vente le plus fort au démarrage.
+Il n'y a donc qu'un seul plan applicatif (`pro`). L'accès est contrôlé par le
+statut d'abonnement (essai / actif / expiré) dans `app/billing.py`, pas par des
+paliers de fonctionnalités.
 """
 from __future__ import annotations
 
+PRO_PRICE = "99 €/mois"
+
 PLAN_FEATURES: dict[str, dict] = {
-    "free": {
-        "label": "Free",
-        "channels": ("email",),
-        "scoring": False,
-        "segments": False,
-        "smart_message": False,
-        "prioritized": False,
-        "monthly_cap": 10,   # entonnoir : 10 relances/mois max
-        "price": "0 €",
-    },
-    "standard": {
-        "label": "Standard",
-        "channels": ("sms", "email"),
-        "scoring": False,
-        "segments": False,
-        "smart_message": False,
-        "prioritized": False,
-        "monthly_cap": None,  # illimité
-        "price": "49 €/mois",
-    },
     "pro": {
         "label": "Pro",
         "channels": ("sms", "email"),
@@ -39,29 +21,22 @@ PLAN_FEATURES: dict[str, dict] = {
         "segments": True,
         "smart_message": True,
         "prioritized": True,
-        "monthly_cap": None,
-        "price": "149 €/mois",
+        "monthly_cap": None,       # pas de quota
+        "manual_approval": True,    # valider/cocher avant envoi
+        "targeting": True,          # cibler par segment / filtres / exclusion
+        "frequency_cap": True,      # plafonds de fréquence renforcés
+        "quiet_hours": True,        # pas d'envoi tard le soir / dimanche
+        "price": PRO_PRICE,
     },
 }
 
-# Ordre des plans (pour proposer uniquement les montées en gamme).
-RANK = {"free": 0, "standard": 1, "pro": 2}
-
-# Cartes de prix affichées comme options de montée en gamme.
-PRICING = [
-    {
-        "id": "standard",
-        "name": "Standard",
-        "price": "49 €/mois",
-        "line": "Relance automatique par email + SMS, multi-canal.",
-    },
-    {
-        "id": "pro",
-        "name": "Pro",
-        "price": "149 €/mois",
-        "line": "Score de priorité, segments, messages sur-mesure, relance priorisée.",
-    },
-]
+# Plafond annuel de relances par client (anti-sur-sollicitation).
+ANNUAL_CAP_PER_CUSTOMER = 6
+# Segments ciblables (mode validation manuelle).
+SEGMENTS = ("VIP", "Habitué", "Occasionnel")
+# Heures calmes : pas d'envoi avant/après ces heures, ni le dimanche (weekday 6).
+QUIET_BEFORE_HOUR = 9
+QUIET_AFTER_HOUR = 21
 
 # Paiement au résultat (alternative à l'abonnement).
 OUTCOME = {
@@ -70,28 +45,37 @@ OUTCOME = {
     "label": "Payez au résultat",
 }
 
-# Arguments de vente affichés dans la bannière d'upsell (valeur du Pro).
+# Atouts mis en avant (essai → abonnement).
 PRO_HIGHLIGHTS = [
-    ("Score de priorité", "On relance tous vos clients — en commençant par les plus précieux. Personne n'est oublié."),
-    ("Segments clients", "VIP, Habitués, Occasionnels — détectés automatiquement."),
+    ("Validation avant envoi", "Vous cochez qui relancer — rien ne part sans votre accord. Ou laissez tourner en auto."),
+    ("Ciblage fin", "Relancez seulement les VIP, les habitués, ou par filtres — et excluez qui vous voulez."),
+    ("Score de priorité", "Vos meilleurs clients passent en premier. Personne n'est oublié."),
     ("Messages sur-mesure", "Le ton s'adapte au segment (un VIP n'est pas un client de passage)."),
+    ("Anti-harcèlement renforcé", "Plafonds de fréquence + heures calmes : impossible de sur-solliciter."),
     ("SMS + Email", "Multi-canal : on choisit le canal qui convertit le mieux."),
-    ("Bon moment, bon ordre", "Vos meilleurs clients passent en tête de file, le reste suit."),
 ]
 
 
-def features(plan: str) -> dict:
-    return PLAN_FEATURES.get(plan, PLAN_FEATURES["free"])
+def features(plan: str | None = None) -> dict:
+    """Renvoie les fonctionnalités du plan (un seul plan : pro)."""
+    return PLAN_FEATURES.get(plan or "pro", PLAN_FEATURES["pro"])
 
 
-def allows_sms(plan: str) -> bool:
+def allows_sms(plan: str | None = None) -> bool:
     return "sms" in features(plan)["channels"]
 
 
-def upgrades(plan: str) -> list[dict]:
-    """Plans proposables au-dessus du plan courant (pour l'upsell)."""
-    current = RANK.get(plan, 0)
-    return [p for p in PRICING if RANK[p["id"]] > current]
+def has(plan: str | None, feature: str) -> bool:
+    """Le plan débloque-t-il cette fonctionnalité ? (toujours vrai en plan unique)."""
+    return bool(features(plan).get(feature, False))
+
+
+def annual_cap(plan: str | None = None) -> int | None:
+    return ANNUAL_CAP_PER_CUSTOMER if has(plan, "frequency_cap") else None
+
+
+def monthly_cap(plan: str | None = None) -> int | None:
+    return features(plan).get("monthly_cap")
 
 
 def outcome_estimate(expected_returns: float) -> float:
@@ -99,6 +83,6 @@ def outcome_estimate(expected_returns: float) -> float:
     return round(expected_returns * OUTCOME["per_client"], 2)
 
 
-def monthly_cap(plan: str) -> int | None:
-    """Quota mensuel de relances (None = illimité)."""
-    return features(plan).get("monthly_cap")
+def in_quiet_hours(now) -> bool:
+    """Vrai si on est en 'heures calmes' (tôt, tard, ou dimanche)."""
+    return now.weekday() == 6 or now.hour < QUIET_BEFORE_HOUR or now.hour >= QUIET_AFTER_HOUR

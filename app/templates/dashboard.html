@@ -24,10 +24,15 @@
     <form method="post" action="/r/{{ restaurant.id | urlencode }}/run-cycle?token={{ token | urlencode }}">
       <button type="submit" class="primary">Lancer un cycle de relance</button>
     </form>
+    {% if features.manual_approval %}
+    <a class="btn" href="/r/{{ restaurant.id | urlencode }}/preview?token={{ token | urlencode }}">✓ Préparer &amp; valider une relance</a>
+    {% endif %}
     {% if quota %}
     <span class="pill" title="Quota du plan Free ce mois-ci">Free : {{ quota.used }}/{{ quota.cap }} relances ce mois</span>
     {% endif %}
   </div>
+
+  {% include "_phone_demo.html" %}
 
   <div class="panel" style="margin:6px 0 4px">
     <div class="pad" style="display:flex; flex-wrap:wrap; gap:18px; align-items:center; justify-content:space-between">
@@ -46,29 +51,31 @@
     </div>
   </div>
 
-  {% if upgrades %}
+  {% if not sub.subscribed %}
   <div class="upsell">
-    <h3>Faites travailler Revoilà pour vous</h3>
-    <p class="lead">Vous relancez à l'aveugle. Passez à la vitesse supérieure — vos données deviennent du revenu.</p>
+    <h3>Votre essai Revoilà</h3>
+    <p class="lead">Toutes les fonctionnalités sont débloquées. Pour continuer après l'essai, choisissez votre formule :</p>
     <ul>
       {% for title, desc in pro_highlights %}
       <li><b>{{ title }}</b><span style="opacity:.9">{{ desc }}</span></li>
       {% endfor %}
     </ul>
     <div class="plan-grid">
-      {% for p in upgrades %}
-      <form method="post" action="/r/{{ restaurant.id | urlencode }}/billing/checkout?token={{ token | urlencode }}&tier={{ p.id }}">
-        <button type="submit" class="plan-card {% if p.id == 'pro' %}featured{% endif %}">
-          <span class="pname">{{ p.name }}{% if p.id == 'pro' %} ★{% endif %}</span>
-          <span class="pprice">{{ p.price }}</span>
-          <span class="pline">{{ p.line }}</span>
-          <span class="pcta">Choisir {{ p.name }} →</span>
+      <form method="post" action="/r/{{ restaurant.id | urlencode }}/billing/checkout?token={{ token | urlencode }}&tier=pro">
+        <button type="submit" class="plan-card featured">
+          <span class="pname">Abonnement Pro</span>
+          <span class="pprice">{{ pro_price }}</span>
+          <span class="pline">Tout inclus, sans limite.</span>
+          <span class="pcta">S'abonner →</span>
         </button>
       </form>
-      {% endfor %}
+      <div class="plan-card" style="cursor:default">
+        <span class="pname">Au résultat</span>
+        <span class="pprice">~{{ outcome.per_client | round | int }} €/client</span>
+        <span class="pline">Sans abonnement — vous ne payez que les retours réels.</span>
+      </div>
     </div>
-    <p class="outcome-note">💡 {{ outcome.label }} : ~{{ outcome.per_client | round | int }} € par client réactivé
-      (estimé à <b>{{ outcome_estimate }} €</b> ce mois-ci) — vous ne payez que si ça marche.</p>
+    <p class="outcome-note">💡 En mode « au résultat », estimé à <b>{{ outcome_estimate }} €</b> ce mois-ci.</p>
   </div>
   {% endif %}
 

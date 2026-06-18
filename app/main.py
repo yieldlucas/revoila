@@ -8,6 +8,7 @@ import re
 from contextlib import asynccontextmanager
 from datetime import date
 from pathlib import Path
+from urllib.parse import quote
 
 from fastapi import FastAPI, Form, HTTPException, Query, Request
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
@@ -16,7 +17,7 @@ from fastapi.templating import Jinja2Templates
 from . import attribution, billing, charts, db, plans, scoring
 from .data_source import get_default_source
 from .logging_config import configure_logging, get_logger
-from .messaging import choose_channel
+from .messaging import choose_channel, generate_message, send_message
 from .models import Restaurant
 from .restaurants import get_all_restaurants, get_restaurant
 from .scheduler import run_cycle
@@ -24,7 +25,7 @@ from .winback import estimate_recovered_revenue, find_lapsed_customers
 
 logger = get_logger(__name__)
 
-VALID_TIERS = ("standard", "pro")
+VALID_TIERS = ("pro",)
 _EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 templates = Jinja2Templates(directory=str(Path(__file__).parent / "templates"))
 
@@ -92,9 +93,9 @@ def landing(request: Request, joined: int = 0, exists: int = 0, error: int = 0):
         request=request,
         name="landing.html",
         context={
-            "pricing": plans.PRICING,
             "outcome": plans.OUTCOME,
             "pro_highlights": plans.PRO_HIGHLIGHTS,
+            "pro_price": plans.PRO_PRICE,
             "waitlist_count": db.count_waitlist(),
             "joined": bool(joined),
             "exists": bool(exists),
@@ -179,7 +180,7 @@ def dashboard(request: Request, restaurant_id: str, token: str = Query("")):
             "sub": billing.subscription_view(restaurant_id),
             "features": feats,
             "pro_highlights": plans.PRO_HIGHLIGHTS,
-            "upgrades": plans.upgrades(restaurant.plan),
+            "pro_price": plans.PRO_PRICE,
             "outcome": plans.OUTCOME,
             "outcome_estimate": plans.outcome_estimate(roi["expected_returns"]),
             "outcome_billing": outcome_billing,
@@ -202,6 +203,61 @@ def trigger_cycle(request: Request, restaurant_id: str, token: str = Query("")):
     # Navigateur : on revient au dashboard mis à jour (pattern POST-redirect-GET).
     return RedirectResponse(
         url=f"/r/{restaurant_id}?token={token}", status_code=303
+    )
+
+
+@app.get("/r/{restaurant_id}/preview", response_class=HTMLResponse)
+def preview(request: Request, restaurant_id: str, token: str = Query(""),
+            segment: str = Query("all")):
+    """Mode validation manuelle (Pro) : liste des clients à relancer, à cocher avant envoi."""
+    restaurant = _check_token(restaurant_id, token)
+    if not plans.has(restaurant.plan, "manual_approval"):
+        # Réservé au Pro → on renvoie vers le dashboard (qui affiche l'upsell).
+        return RedirectResponse(
+            url=f"/r/{quote(restaurant_id)}?token={quote(token)}", status_code=303
+        )
+    db.init_db()
+    customers = get_default_source().get_customers(restaurant_id)
+    logs = db.get_logs(restaurant_id)
+    opt_outs = db.get_opt_outs(restaurant_id)
+    targets = find_lapsed_customers(
+        customers, restaurant, logs=logs, opt_outs=opt_outs,
+        annual_cap=plans.annual_cap(restaurant.plan),
+    )
+    rows = []
+    for c, s in scoring.prioritize(targets, restaurant):
+        if segment != "all" and s.segment != segment:
+            continue
+        rows.append({
+            "c": c, "score": s.value, "segment": s.segment,
+            "channel": choose_channel(c, restaurant),
+            "message": generate_message(c, restaurant),
+        })
+    return templates.TemplateResponse(
+        request=request, name="preview.html",
+        context={"restaurant": restaurant, "token": token, "rows": rows,
+                 "segment": segment, "segments": plans.SEGMENTS},
+    )
+
+
+@app.post("/r/{restaurant_id}/preview/send")
+def preview_send(restaurant_id: str, token: str = Query(""),
+                 ids: list[str] = Form(default=[])):
+    """Envoie uniquement les clients cochés (validation manuelle, Pro)."""
+    restaurant = _check_token(restaurant_id, token)
+    if not billing.is_active(restaurant_id):
+        raise HTTPException(status_code=402, detail="Essai terminé — abonnez-vous pour envoyer.")
+    db.init_db()
+    by_id = {c.id: c for c in get_default_source().get_customers(restaurant_id)}
+    sent = 0
+    for cid in ids:
+        customer = by_id.get(cid)
+        if customer is None:
+            continue
+        db.add_log(send_message(customer, restaurant, generate_message(customer, restaurant)))
+        sent += 1
+    return RedirectResponse(
+        url=f"/r/{quote(restaurant_id)}?token={quote(token)}&sent={sent}", status_code=303
     )
 
 

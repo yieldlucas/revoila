@@ -109,9 +109,10 @@ def notify_waitlist_signup(email: str, count: int) -> str:
     """
     to = config.WAITLIST_NOTIFY_EMAIL
     if not to:
+        logger.warning("[waitlist] ignoré : WAITLIST_NOTIFY_EMAIL non défini.")
         return "skipped"
     if config.DRY_RUN or not config.BREVO_API_KEY:
-        logger.info("[waitlist] nouvel inscrit %s (total %s) → %s", email, count, to)
+        logger.info("[waitlist] (dry-run) inscrit %s (total %s) → %s", email, count, to)
         return "logged"
     try:
         import requests
@@ -130,6 +131,7 @@ def notify_waitlist_signup(email: str, count: int) -> str:
             logger.warning("[waitlist] Brevo %s pour %s : %s",
                            resp.status_code, email, resp.text[:400])
             return "failed"
+        logger.info("[waitlist] notification envoyée à %s (inscrit : %s)", to, email)
         return "sent"
     except Exception as e:
         logger.warning("[waitlist] notification échouée pour %s : %s", email, e)

@@ -140,9 +140,59 @@
     .brand:hover .logo{transform:rotate(-25deg)}
     .chart svg rect{transform-box:fill-box; transform-origin:bottom; animation:grow .7s cubic-bezier(.16,1,.3,1) both}
     @keyframes grow{from{transform:scaleY(0)} to{transform:scaleY(1)}}
+    /* Démo animée "relance en direct" (téléphone + chat) */
+    .phone-demo .layout{display:flex; gap:28px; flex-wrap:wrap; align-items:center; justify-content:space-between}
+    .phone-demo .txt{flex:1; min-width:240px}
+    .phone-demo .phone{width:244px; flex:none; border:1px solid var(--line); border-radius:30px;
+      background:#fff; box-shadow:0 22px 50px rgba(0,0,0,.13); overflow:hidden}
+    .phone-demo .phone-top{background:var(--section); padding:12px; text-align:center; font-weight:600;
+      font-size:13px; border-bottom:1px solid var(--line)}
+    .phone-demo .chat{height:300px; overflow:hidden; padding:14px; display:flex; flex-direction:column;
+      gap:8px; background:#fafafc}
+    .phone-demo .bubble{max-width:84%; padding:8px 11px; border-radius:15px; font-size:12.5px;
+      line-height:1.35; opacity:0; transform:translateY(6px); animation:bubin .28s ease forwards}
+    @keyframes bubin{to{opacity:1; transform:none}}
+    .phone-demo .bubble.out{align-self:flex-end; background:var(--accent); color:#fff; border-bottom-right-radius:5px}
+    .phone-demo .bubble.in{align-self:flex-start; background:#fff; border:1px solid var(--line); border-bottom-left-radius:5px}
+    .phone-demo .bubble.sys{align-self:center; background:#eef2f7; color:var(--muted); font-size:11px; text-align:center; max-width:96%}
+    .phone-demo .bubble.typing{display:flex; gap:4px; align-items:center; padding:11px 12px}
+    .phone-demo .bubble.typing span{width:6px; height:6px; border-radius:50%; background:currentColor; opacity:.5; animation:blink 1s infinite}
+    .phone-demo .bubble.out.typing span{background:#fff}
+    .phone-demo .bubble.typing span:nth-child(2){animation-delay:.2s}
+    .phone-demo .bubble.typing span:nth-child(3){animation-delay:.4s}
+    @keyframes blink{0%,100%{opacity:.3} 50%{opacity:1}}
+    .phone-demo .demo-toast{margin-top:12px; background:#e7f6ec; color:var(--green); font-weight:600;
+      padding:11px 14px; border-radius:12px; opacity:0; transform:translateY(6px); transition:.45s cubic-bezier(.16,1,.3,1)}
+    .phone-demo .demo-toast.show{opacity:1; transform:none}
+
+    /* Bandeau "en chiffres" + FAQ */
+    .nums{display:grid; grid-template-columns:repeat(3,1fr); gap:14px}
+    .nums .b{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:22px; text-align:center}
+    .nums .b .big{font-size:34px; font-weight:800; letter-spacing:-.03em; color:var(--accent)}
+    .nums .b .lab{font-size:13px; color:var(--muted); margin-top:2px}
+    .faq details{background:var(--card); border:1px solid var(--line); border-radius:14px; padding:4px 16px; margin-bottom:10px}
+    .faq summary{cursor:pointer; font-weight:600; padding:12px 0; list-style:none}
+    .faq summary::-webkit-details-marker{display:none}
+    .faq summary::after{content:"+"; float:right; color:var(--muted); font-weight:400}
+    .faq details[open] summary::after{content:"–"}
+    .faq p{margin:0 0 14px; color:var(--muted); font-size:14px}
+
+    /* Scénarios de messages */
+    .scenarios{display:grid; grid-template-columns:repeat(3,1fr); gap:14px}
+    .scen{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:16px; display:flex; flex-direction:column; gap:10px}
+    .scen:hover{transform:translateY(-3px); box-shadow:0 14px 34px rgba(0,0,0,.07)}
+    .scen{transition:transform .25s cubic-bezier(.16,1,.3,1), box-shadow .25s}
+    .scen .h{display:flex; align-items:center; justify-content:space-between; gap:8px}
+    .scen .h b{font-size:14.5px}
+    .scen .msg{background:#f0f6ff; border:1px solid #e1ecfb; border-radius:13px; border-bottom-left-radius:4px;
+      padding:10px 12px; font-size:12.5px; line-height:1.42; color:#1d1d1f}
+    .scen .chan{font-size:11px; font-weight:600; color:var(--muted); border:1px solid var(--line); border-radius:999px; padding:2px 9px; white-space:nowrap}
+    @media(max-width:640px){ .nums,.scenarios{grid-template-columns:1fr} }
+
     @media(prefers-reduced-motion:reduce){
       *,.hero>*{animation:none!important; transition:none!important}
       .reveal{opacity:1; transform:none}
+      .phone-demo .bubble{opacity:1; transform:none}
     }
   </style>
 </head>
@@ -208,6 +258,40 @@
         });
       }, { threshold: 0.5 });
       counters.forEach(function(el){ io2.observe(el); });
+    }
+
+    // Démo "relance en direct"
+    var demo = document.querySelector('.phone-demo');
+    if (demo) {
+      var chat = demo.querySelector('.chat');
+      var toast = demo.querySelector('.demo-toast');
+      var btn = demo.querySelector('.demo-btn');
+      var running = false;
+      function wait(ms){ return new Promise(function(r){ setTimeout(r, reduce ? Math.min(ms,120) : ms); }); }
+      function bubble(cls, html){ var d=document.createElement('div'); d.className='bubble '+cls; d.innerHTML=html; chat.appendChild(d); chat.scrollTop=chat.scrollHeight; return d; }
+      async function runDemo(){
+        if (running) return; running = true;
+        if (btn){ btn.disabled = true; btn.textContent = 'Démo en cours…'; }
+        chat.innerHTML = ''; if (toast) toast.classList.remove('show');
+        bubble('sys', '🔔 Client endormi détecté : <b>Camille</b> · absente depuis 58 j');
+        await wait(950);
+        var t1 = bubble('out typing', '<span></span><span></span><span></span>'); await wait(1100); t1.remove();
+        bubble('out', "Bonjour Camille, ça fait un moment chez Chez Lucas ! On garde votre magret au chaud 🍽️");
+        await wait(1200);
+        var t2 = bubble('in typing', '<span></span><span></span><span></span>'); await wait(1100); t2.remove();
+        bubble('in', "Oh génial, je réserve pour 2 ce soir 😍");
+        await wait(650);
+        if (toast) toast.classList.add('show');
+        if (btn){ btn.disabled = false; btn.textContent = '↺ Rejouer'; }
+        running = false;
+      }
+      if (btn) btn.addEventListener('click', runDemo);
+      if (!reduce && 'IntersectionObserver' in window) {
+        var io3 = new IntersectionObserver(function(entries){
+          entries.forEach(function(en){ if (en.isIntersecting){ runDemo(); io3.disconnect(); } });
+        }, { threshold: 0.45 });
+        io3.observe(demo);
+      }
     }
   })();
   </script>

@@ -5,6 +5,7 @@ Le rendu HTML utilise des templates Jinja2 (auto-échappés) dans app/templates/
 from __future__ import annotations
 
 import re
+import time
 from contextlib import asynccontextmanager
 from datetime import date
 from pathlib import Path
@@ -12,9 +13,10 @@ from urllib.parse import quote
 
 from fastapi import FastAPI, Form, HTTPException, Query, Request
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
+from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from . import attribution, billing, charts, db, plans, scoring
+from . import attribution, billing, charts, config, db, plans, scoring
 from .data_source import get_default_source
 from .logging_config import configure_logging, get_logger
 from .messaging import choose_channel, demo_campaign, generate_message, send_message
@@ -40,6 +42,21 @@ def _score_color(score: int) -> str:
 
 
 templates.env.globals["score_color"] = _score_color
+templates.env.globals["base_url"] = config.PUBLIC_BASE_URL.rstrip("/")
+
+# Anti-abus waitlist : limite simple par IP (en mémoire, suffisant pour un mono-instance).
+_WL_HITS: dict[str, list[float]] = {}
+
+
+def _rate_ok(ip: str, limit: int = 5, window: int = 600) -> bool:
+    now = time.time()
+    hits = [t for t in _WL_HITS.get(ip, []) if now - t < window]
+    if len(hits) >= limit:
+        _WL_HITS[ip] = hits
+        return False
+    hits.append(now)
+    _WL_HITS[ip] = hits
+    return True
 
 
 @asynccontextmanager
@@ -58,7 +75,8 @@ async def lifespan(app: FastAPI):
         logger.info("Scheduler arrêté.")
 
 
-app = FastAPI(title="Winback Resto — MVP", lifespan=lifespan)
+app = FastAPI(title="Revoilà", lifespan=lifespan)
+app.mount("/static", StaticFiles(directory=str(Path(__file__).parent / "static")), name="static")
 
 
 def _check_token(restaurant_id: str, token: str) -> Restaurant:
@@ -107,8 +125,16 @@ def landing(request: Request, joined: int = 0, exists: int = 0, error: int = 0):
 
 
 @app.post("/waitlist")
-def join_waitlist(email: str = Form(...), source: str = Form("landing")):
-    """Enregistre un email de waitlist puis renvoie vers la landing avec un statut."""
+def join_waitlist(request: Request, email: str = Form(...),
+                  source: str = Form("landing"), website: str = Form("")):
+    """Enregistre un email de waitlist (avec garde-fous anti-abus)."""
+    # Honeypot : un bot remplit ce champ caché → on fait semblant d'accepter.
+    if website.strip():
+        return RedirectResponse(url="/?joined=1#waitlist", status_code=303)
+    # Limite par IP.
+    ip = request.client.host if request.client else "unknown"
+    if not _rate_ok(ip):
+        return RedirectResponse(url="/?joined=1#waitlist", status_code=303)
     db.init_db()
     email = email.strip().lower()
     if not _EMAIL_RE.match(email):
@@ -123,6 +149,12 @@ def join_waitlist(email: str = Form(...), source: str = Form("landing")):
             logger.warning("Notification waitlist échouée : %s", e)
     flag = "joined=1" if created else "exists=1"
     return RedirectResponse(url=f"/?{flag}#waitlist", status_code=303)
+
+
+@app.get("/mentions", response_class=HTMLResponse)
+def mentions(request: Request):
+    """Mentions légales & confidentialité (RGPD)."""
+    return templates.TemplateResponse(request=request, name="mentions.html", context={})
 
 
 @app.get("/demo", response_class=HTMLResponse)
@@ -270,7 +302,7 @@ def billing_checkout(
     request: Request,
     restaurant_id: str,
     token: str = Query(""),
-    tier: str = Query("standard"),
+    tier: str = Query("pro"),
 ):
     """Démarre un abonnement Stripe : redirige vers le paiement (ou renvoie l'URL en JSON)."""
     restaurant = _check_token(restaurant_id, token)

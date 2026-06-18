@@ -1,7 +1,7 @@
 """Fixtures partagées : isole chaque test (DB jetable + caches vidés)."""
 import pytest
 
-from app import data_source, db, restaurants
+from app import data_source, db, main, restaurants
 
 
 @pytest.fixture(autouse=True)
@@ -11,6 +11,7 @@ def _isolate(tmp_path, monkeypatch):
     db.init_db()
     data_source._mock_cache.clear()
     restaurants.reload()
+    main._WL_HITS.clear()  # remet à zéro le rate-limit waitlist entre les tests
     yield
     data_source._mock_cache.clear()
     restaurants.reload()

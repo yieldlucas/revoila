@@ -91,6 +91,27 @@ def test_waitlist_doublon():
     assert "exists=1" in r.headers["location"]
 
 
+def test_waitlist_honeypot_bloque_les_bots():
+    from app import db
+    with _client() as c:
+        r = c.post("/waitlist", data={"email": "bot@spam.fr", "website": "http://spam"},
+                   follow_redirects=False)
+    assert r.status_code == 303
+    assert db.count_waitlist() == 0  # rien enregistré
+
+
+def test_og_image_servie():
+    with _client() as c:
+        r = c.get("/static/og.png")
+    assert r.status_code == 200 and r.headers["content-type"].startswith("image/")
+
+
+def test_mentions_accessible():
+    with _client() as c:
+        r = c.get("/mentions")
+    assert r.status_code == 200 and "RGPD" in r.text
+
+
 def test_waitlist_notifie_le_proprietaire(monkeypatch):
     calls = []
     monkeypatch.setattr("app.messaging.notify_waitlist_signup",

@@ -107,6 +107,19 @@
   <details><summary>Combien ça coûte ?</summary><p>14 jours gratuits, puis 99 €/mois tout inclus — ou ~5 € par client réellement revenu, sans abonnement.</p></details>
 </div>
 
+<div class="section reveal">
+  <div class="panel"><div class="pad" style="display:flex; gap:18px; align-items:center; flex-wrap:wrap">
+    <div style="width:64px; height:64px; border-radius:50%; background:var(--pro); color:#fff; display:grid; place-items:center; font-weight:800; font-size:26px; flex:none">L</div>
+    <div style="flex:1; min-width:240px">
+      <h3 style="margin:0 0 6px; font-size:18px">Qui est derrière Revoilà ?</h3>
+      <p class="muted" style="margin:0">Salut, moi c'est <b>Lucas</b>. J'ai passé des années en cuisine avant de créer Revoilà.
+        Je sais ce que c'est, un mardi soir avec des tables vides et de bons clients qu'on ne revoit jamais.
+        Revoilà, c'est l'outil que j'aurais voulu avoir. Une question, une idée ?
+        Écrivez-moi : <a href="mailto:lucas@studiolucas.fr">lucas@studiolucas.fr</a>.</p>
+    </div>
+  </div></div>
+</div>
+
 <div class="section" id="waitlist">
   <div class="wl">
     <h3 style="margin:0 0 6px; font-size:26px; color:#fff">Soyez parmi les premiers</h3>
@@ -117,8 +130,13 @@
     <form method="post" action="/waitlist">
       <input type="email" name="email" placeholder="votre@email.fr" required aria-label="Email">
       <input type="hidden" name="source" value="landing">
+      <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true"
+             style="position:absolute; left:-9999px; width:1px; height:1px; opacity:0">
       <button type="submit">Je veux être prévenu</button>
     </form>
+    <p style="margin:14px 0 0; font-size:12px; opacity:.85">
+      En vous inscrivant, vous acceptez d'être recontacté au lancement. Vos données ne sont jamais
+      revendues. <a href="/mentions" style="color:#fff; text-decoration:underline">Mentions légales</a></p>
   </div>
 </div>
 {% endblock %}

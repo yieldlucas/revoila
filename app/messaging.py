@@ -126,7 +126,10 @@ def notify_waitlist_signup(email: str, count: int) -> str:
             },
             timeout=15,
         )
-        resp.raise_for_status()
+        if resp.status_code >= 400:
+            logger.warning("[waitlist] Brevo %s pour %s : %s",
+                           resp.status_code, email, resp.text[:400])
+            return "failed"
         return "sent"
     except Exception as e:
         logger.warning("[waitlist] notification échouée pour %s : %s", email, e)

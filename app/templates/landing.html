@@ -140,7 +140,7 @@
   <h3 style="margin:22px 0 10px; font-size:16px">Option 2 — Payez au résultat <span class="tag habitue">sans risque</span></h3>
   <div class="panel"><div class="pad">
     <p style="margin:0 0 12px"><b>Vous ne payez que pour les clients qui reviennent vraiment.</b>
-      ~{{ outcome.per_client }} € par client réactivé (ou {{ (outcome.pct_revenue * 100) | round | int }} % du CA récupéré). Aucun abonnement.</p>
+      ~{{ outcome.per_client | round | int }} € par client réactivé (ou {{ (outcome.pct_revenue * 100) | round | int }} % du CA récupéré). Aucun abonnement.</p>
     <div class="steps">
       <div class="step"><div class="k">1</div><b>On relance</b><p class="muted">Vos clients endormis reçoivent un message automatique.</p></div>
       <div class="step"><div class="k">2</div><b>On détecte le retour</b><p class="muted">Le client repasse en caisse dans les 30 jours → c'est tracé.</p></div>

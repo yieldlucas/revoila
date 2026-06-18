@@ -67,7 +67,7 @@
       </form>
       {% endfor %}
     </div>
-    <p class="outcome-note">💡 {{ outcome.label }} : ~{{ outcome.per_client }} € par client réactivé
+    <p class="outcome-note">💡 {{ outcome.label }} : ~{{ outcome.per_client | round | int }} € par client réactivé
       (estimé à <b>{{ outcome_estimate }} €</b> ce mois-ci) — vous ne payez que si ça marche.</p>
   </div>
   {% endif %}
